@@ -1,0 +1,357 @@
+Shreyans Gupta (sg609)
+DIIG F23 Data Challenge
+
+
+```{r}
+#packages
+library(tidyverse)
+library(janitor)
+library(treemapify)
+library(plotly)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+```{r}
+#make sure it reads properly
+store_data <- read_csv("Superstore.csv")
+if (exists("store_data")) {
+  head(store_data)
+} else {
+  cat("store_data object not found. Check for errors in reading the CSV file.\n")
+}
+glimpse(store_data)
+```
+```{r}
+#clean the data so I can use the column names in data analysis
+store_data %>%
+  janitor::clean_names()
+colnames(store_data)
+```
+```{r}
+#clean the data so we can operate with suitable column names
+store_data <- store_data%>%
+  clean_names()
+colnames(store_data)
+
+
+#tree map to show sales by region
+sales_by_region <- aggregate(sales ~ region, data = store_data, FUN = sum)
+sales_by_region
+sales_by_region$total_sales <- round(sales_by_region$sales)
+
+treemap_plot <- plot_ly(
+  data = sales_by_region,
+  labels = ~paste(region, "<br>", "Sales: $", total_sales),
+  parents = '',
+  values = ~total_sales,
+  type = 'treemap',
+  marker = list(
+    textposition = "middle center",  
+    textfont = list(
+      family = "Arial",             
+      size = 25,                     
+      color = "white",               
+      weight = "bold"              
+    )
+  )
+)
+treemap_plot
+```
+```{r}
+profit_by_region <- aggregate(profit ~ region, data = store_data, FUN = sum)
+profit_by_region
+profit_by_region$total_profit <- round(profit_by_region$profit)
+
+treemap_plot <- plot_ly(
+  data = profit_by_region,
+  labels = ~paste(region, "<br>", "Profit: $", total_profit),
+  parents = '',
+  values = ~total_profit,
+  type = 'treemap',
+  marker = list(
+    textposition = "middle center",  
+    textfont = list(
+      family = "Arial",              
+      size = 25,                     
+      color = "white",               
+      weight = "bold"                
+    )
+  )
+)
+treemap_plot
+```
+```{r}
+# Extracting year from the order date
+store_data$order_year <- year(mdy(store_data$order_date))
+```
+
+```{r}
+region_colors <- c("#0000FF", "#FFA500", "#008000", "#FF0000")  
+
+# Filter the data so I get just the regions
+selected_regions <- c("West", "East", "South", "Central")
+filtered_data <- store_data %>%
+  filter(region %in% selected_regions)
+
+stacked_area_chart <- filtered_data %>%
+  group_by(order_year, region) %>%
+  summarize(total_sales = sum(sales)) %>%
+  plot_ly(
+    x = ~order_year,
+    y = ~total_sales,
+    color = ~region,
+    type = 'bar',
+    mode = 'stack',
+    colors = region_colors  
+  ) %>%
+  layout(
+    title = "Sales by Year for Each Region",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Total Sales in USD"),
+    showlegend = TRUE
+  )
+
+stacked_area_chart
+```
+```{r}
+selected_regions <- c("West")
+filtered_data <- store_data %>%
+  filter(region %in% selected_regions)
+
+stacked_area_chart <- filtered_data %>%
+  group_by(order_year, region) %>%
+  summarize(total_profit = sum(profit), total_sales = sum(sales)) %>%
+  plot_ly(x = ~order_year, y = ~total_sales, name = 'Total Sales', type = 'bar', mode = 'stack') %>%
+  add_trace(y = ~total_profit, name = 'Total Profit', mode = 'stack') %>%
+  layout(
+    title = "West Region",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Total Sales & Profit"),
+    showlegend = TRUE
+  )
+
+stacked_area_chart
+```
+ 
+```{r}
+selected_regions <- c("East")
+filtered_data <- store_data %>%
+  filter(region %in% selected_regions)
+
+stacked_area_chart <- filtered_data %>%
+  group_by(order_year, region) %>%
+  summarize(total_sales = sum(sales), total_profit = sum(profit)) %>%
+  plot_ly(x = ~order_year, y = ~total_sales, name = 'Total Sales', type = 'bar', mode = 'stack') %>%
+  add_trace(y = ~total_profit, name = 'Total Profit', mode = 'stack') %>%
+  layout(
+    title = "East Region",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Total Sales & Profit"),
+    showlegend = TRUE
+  )
+
+stacked_area_chart
+```
+```
+
+```{r}
+```{r}
+selected_regions <- c("Central")
+filtered_data <- store_data %>%
+  filter(region %in% selected_regions)
+
+stacked_area_chart <- filtered_data %>%
+  group_by(order_year, region) %>%
+  summarize(total_sales = sum(sales), total_profit = sum(profit)) %>%
+  plot_ly(x = ~order_year, y = ~total_sales, name = 'Total Sales', type = 'bar', mode = 'stack') %>%
+  add_trace(y = ~total_profit, name = 'Total Profit', mode = 'stack') %>%
+  layout(
+    title = "Central Region",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Total Sales & Profit"),
+    showlegend = TRUE
+  )
+
+stacked_area_chart
+```
+```
+```{r}
+```{r}
+selected_regions <- c("South")
+filtered_data <- store_data %>%
+  filter(region %in% selected_regions)
+stacked_area_chart <- filtered_data %>%
+  group_by(order_year, region) %>%
+  summarize(total_sales = sum(sales), total_profit = sum(profit)) %>%
+  plot_ly(x = ~order_year, y = ~total_sales, name = 'Total Sales', type = 'bar', mode = 'stack') %>%
+  add_trace(y = ~total_profit, name = 'Total Profit', mode = 'stack') %>%
+  layout(
+    title = "South Region",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Total Sales & Profit in USD"),
+    showlegend = TRUE
+  )
+
+stacked_area_chart
+```
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd")
+
+stacked_area_chart <- store_data %>%
+  ggplot(aes(x = category, y = sum(sales), fill = category)) +
+  geom_col() +
+  facet_grid(~order_year) +
+  theme_bw() +
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_blank()) +
+  labs(title = "Sales by Category for each Year", x = NULL, y = "Sales (dollars)") +
+  theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5)) +
+  scale_fill_manual(values = custom_colors) 
+
+stacked_area_chart
+```
+
+```{r}
+profit_trend_plot <- store_data %>%
+  group_by(category, order_year) %>%
+  summarize(total_profit = sum(profit)) %>%
+  plot_ly(
+    x = ~order_year,
+    y = ~total_profit,
+    color = ~category,
+    type = 'scatter',
+    mode = 'lines+markers',
+    size = 0,
+    opacity = 10,
+    marker = list(line = list(width = 0.5))  
+  ) %>%
+  layout(
+    title = "Profit Trend by Year for each Category",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Profit (dollars)")
+  )
+
+profit_trend_plot
+```
+
+```{r}
+custom_colors <- c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd")
+
+bar_chart <- store_data %>%
+  ggplot(aes(x = sub_category, fill = category)) +
+  geom_bar() +
+  theme_bw() +
+  coord_flip() +
+  labs(title = "Product Distribution by Sub_Category",
+       x = "Products in Sub Category",
+       y = "Frequency") +
+  theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5)) +
+  scale_fill_manual(values = custom_colors) 
+
+bar_chart
+```
+
+
+```{r}
+custom_colors <- c("total_sales" = "green", "total_profit" = "red")
+
+bar_chart <- store_data %>%
+  group_by(sub_category) %>%
+  summarise(total_sales = sum(sales), total_profit = sum(profit)) %>%
+  pivot_longer(c("total_sales", "total_profit")) %>%
+  ggplot(aes(x = sub_category, y = value, fill = name)) +
+  geom_col(position = position_dodge()) +
+  scale_fill_manual(values = custom_colors) +  
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme(legend.title = element_blank()) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Total Profit and Sales by Sub_Category") +
+  theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5))
+
+bar_chart
+```
+```{r}
+
+custom_colors <- c("Consumer" = "blue", "Corporate" = "green", "Home Office" = "orange")
+
+stacked_bar_chart <- store_data %>%
+  group_by(ship_mode, segment) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x = ship_mode, y = total, fill = segment)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = custom_colors) + 
+  facet_wrap(~segment) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Breakdown of Customers by Segment and Ship Mode") +
+  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5)) +
+  geom_text(aes(label = total), vjust = -0.4)
+
+stacked_bar_chart
+```
+```{r}
+ggplot(data = store_data, aes(x = discount, y = sales)) +
+    geom_point() +
+    geom_smooth(method = 'lm', se = F, color = 'blue') +
+    labs(x = "Discount on Product",
+         y = "Sales (in USD)",
+         title = "Relationship Between Discount and Sales")
+```
+```{r}
+ggplot(data = store_data, aes(x = discount, y = profit, color = discount)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE, aes(group = 1), color = 'blue') +
+  labs(
+    x = "Discount on Product",
+    y = "Profit (in USD)",
+    title = "Relationship Between Discount and Profit"
+  ) +
+  scale_color_gradient(low = "green", high = "red")
+```
+```{r}
+ggplot(data = store_data, aes(x = discount, y = segment)) +
+    geom_point() +
+    geom_smooth(method = 'lm', se = F, color = 'blue') +
+    labs(x = "Discount on Product",
+         y = "Profit (in USD)",
+         title = "Relationship Between Discount and Segment")
+```
+
+```{r}
+ggplot(data = store_data, aes(x = discount, y = quantity)) +
+    geom_point() +
+    geom_smooth(method = 'lm', se = F, color = 'blue') +
+    labs(x = "Discount on Product",
+         y = "Quantity of Products Sold",
+         title = "Relationship Between Discount and Quantity of Products Sold")
+```
+
+```{r}
+filtered_data <- subset(store_data, discount > 0.0)
+ggplot(data = filtered_data, aes(x = discount, fill = ..count..)) +
+  geom_histogram() +
+  scale_fill_gradient(low = "green", high = "red") +  
+  labs(
+    x = "Discount on Product",
+    y = "Frequency",
+    title = "Distribution of Discounts > 0.0 on Products"
+  )
+```
+
+
+```{r}
+ggplot(data = store_data, aes(x = ship_mode, y = profit )) +
+    geom_point() +
+    geom_smooth(method = 'lm', se = F, color = 'blue') +
+    labs(x = "Discount on Product",
+         y = "Profit (in USD)",
+         title = "Relationship Between Discount and Segment")
+```
+```
+ *Cmd+Option+I*.
+
+
+
